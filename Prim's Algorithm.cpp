@@ -1,56 +1,93 @@
 #include <iostream>
+#include <climits>
 using namespace std;
 
-#define INF 9999
+#define V 5
 
-int main() {
-    int n;
-    cout << "Enter number of vertices: ";
-    cin >> n;
+int minKey(int key[], bool mstSet[])
+{
+    int minValue = INT_MAX;
+    int minIndex = -1;
 
-    int graph[20][20];
-
-    cout << "Enter adjacency matrix:\n";
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            cin >> graph[i][j];
-
-            if (graph[i][j] == 0)
-                graph[i][j] = INF;
+    for (int v = 0; v < V; v++)
+    {
+        if (!mstSet[v] && key[v] < minValue)
+        {
+            minValue = key[v];
+            minIndex = v;
         }
     }
 
-    int visited[20] = {0};
-    visited[0] = 1;
+    return minIndex;
+}
 
-    int edges = 0, total = 0;
+void primMST(int graph[V][V])
+{
+    int parent[V];
+    int key[V];
+    bool mstSet[V];
 
-    cout << "\nMinimum Spanning Tree:\n";
+    // Initialize values
+    for (int i = 0; i < V; i++)
+    {
+        key[i] = INT_MAX;
+        mstSet[i] = false;
+    }
 
-    while (edges < n - 1) {
-        int min = INF;
-        int u = -1, v = -1;
+    // Start from vertex 0
+    key[0] = 0;
+    parent[0] = -1;
 
-        for (int i = 0; i < n; i++) {
-            if (visited[i]) {
-                for (int j = 0; j < n; j++) {
-                    if (!visited[j] && graph[i][j] < min) {
-                        min = graph[i][j];
-                        u = i;
-                        v = j;
-                    }
-                }
+    for (int count = 0; count < V - 1; count++)
+    {
+        int u = minKey(key, mstSet);
+
+        mstSet[u] = true;
+
+        for (int v = 0; v < V; v++)
+        {
+            if (graph[u][v] != 0 &&
+                !mstSet[v] &&
+                graph[u][v] < key[v])
+            {
+                parent[v] = u;
+                key[v] = graph[u][v];
             }
         }
-
-        cout << u << " - " << v << " = " << min << endl;
-
-        visited[v] = 1;
-        total += min;
-        edges++;
     }
 
-    cout << "Total MST Cost = " << total << endl;
+    int totalCost = 0;
+
+    cout << "\nEdges in Minimum Spanning Tree:\n";
+    cout << "Edge\tWeight\n";
+
+    for (int i = 1; i < V; i++)
+    {
+        cout << char(parent[i] + 'A')
+             << " - "
+             << char(i + 'A')
+             << "\t"
+             << graph[i][parent[i]]
+             << endl;
+
+        totalCost += graph[i][parent[i]];
+    }
+
+    cout << "\nTotal cost of MST = " << totalCost << endl;
+}
+
+int main()
+{
+    int graph[V][V] =
+    {
+        {0, 2, 0, 6, 0},
+        {2, 0, 3, 8, 5},
+        {0, 3, 0, 0, 7},
+        {6, 8, 0, 0, 9},
+        {0, 5, 7, 9, 0}
+    };
+
+    primMST(graph);
 
     return 0;
 }
